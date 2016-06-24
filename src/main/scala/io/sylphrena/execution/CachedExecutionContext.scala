@@ -19,11 +19,11 @@ object CachedExecutionContext {
   private[this] val numProc = Runtime.getRuntime().availableProcessors()
 
   private[this] val executor = new ThreadPoolExecutor(
-      4, // core size
-      200, // max size
-      10 * 60, // idle timeout
+      numProc,
+      200,
+      10 * 60,
       TimeUnit.SECONDS,
-      new LinkedBlockingQueue[Runnable]()) // queue with a size
+      new LinkedBlockingQueue[Runnable]())
   executor.allowCoreThreadTimeOut(true)
 }
 

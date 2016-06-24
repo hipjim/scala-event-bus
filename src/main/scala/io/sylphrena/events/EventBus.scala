@@ -6,20 +6,17 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
-import io.sylphrena.events.models.{EventBus, EventHandler}
 import io.sylphrena.execution.CachedExecutionContext
 
-object models {
-  type EventHandler[T] = T => Unit
-
-  sealed trait EventBus {
-    def withAsyncExecution: EventBus
-    def post[T](event: => T)(implicit ec: ExecutionContext = CachedExecutionContext.instance): Unit
-    def postAtInterval[T](interval: FiniteDuration,
-                          initialDelay: FiniteDuration = 0.seconds)(
-        event: => T): Unit
-    def subscribe[T](e: EventHandler[T])(implicit c: ClassTag[T]): EventBus
-  }
+sealed trait EventBus {
+  def withAsyncExecution: EventBus
+  def post[T](event: => T)(
+      implicit ec: ExecutionContext = CachedExecutionContext.instance): Unit
+  def postAtInterval[T](interval: FiniteDuration,
+                        initialDelay: FiniteDuration = 0.seconds)(
+      event: => T): Unit
+  def subscribe[T](e: EventHandler[T])(implicit c: ClassTag[T]): EventBus
+  def shutDown(): Unit
 }
 
 object EventBus {
@@ -55,5 +52,7 @@ object EventBus {
     }
 
     override def withAsyncExecution = this.copy(async = true)
+
+    override def shutDown(): Unit = {}
   }
 }

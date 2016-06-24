@@ -1,9 +1,5 @@
 package io.sylphrena.events
 
-import java.lang.reflect.{ParameterizedType, Type}
-
-import io.sylphrena.events.models.EventHandler
-
 import scala.collection.mutable
 import scala.language.higherKinds
 import scala.reflect.ClassTag
