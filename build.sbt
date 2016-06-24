@@ -1,10 +1,12 @@
 name := "sv-group-service"
 
-organization := "com.eon"
+organization := "io.sylphrena"
 
 version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.11.8"
+
+libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.6"
 
 scalacOptions ++= Seq(
   "-target:jvm-1.7",

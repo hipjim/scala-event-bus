@@ -1,9 +1,15 @@
 package io.sylphrena.events
 
+import io.sylphrena.execution.EventBusExecutionContext
+
+
 /**
   * Created by dev on 01/06/16.
   */
 object Runner extends App {
+
+  implicit val ec = EventBusExecutionContext.instance
+
   final case class Msg(i: Int)
 
   val eb = EventBus().withAsyncExecution
