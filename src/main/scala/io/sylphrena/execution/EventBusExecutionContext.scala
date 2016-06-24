@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
   * 
   * Created by dev on 22/06/16.
   */
-object CachedExecutionContext {
+object EventBusExecutionContext {
   val instance = ExecutionContext.fromExecutor(executor)
 
   private[this] val numProc = Runtime.getRuntime().availableProcessors()
@@ -27,6 +27,6 @@ object CachedExecutionContext {
   executor.allowCoreThreadTimeOut(true)
 }
 
-trait CachedExecutionContext {
-  implicit val defaultExecutionContext = CachedExecutionContext.instance
+trait EventBusExecutionContext {
+  implicit val defaultExecutionContext = EventBusExecutionContext.instance
 }

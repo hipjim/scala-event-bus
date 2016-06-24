@@ -6,12 +6,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
-import io.sylphrena.execution.CachedExecutionContext
+import io.sylphrena.execution.EventBusExecutionContext
 
 sealed trait EventBus {
   def withAsyncExecution: EventBus
   def post[T](event: => T)(
-      implicit ec: ExecutionContext = CachedExecutionContext.instance): Unit
+      implicit ec: ExecutionContext = EventBusExecutionContext.instance): Unit
   def postAtInterval[T](interval: FiniteDuration,
                         initialDelay: FiniteDuration = 0.seconds)(
       event: => T): Unit
@@ -28,7 +28,7 @@ object EventBus {
 
     override def post[T](
         event: => T)(implicit ec: ExecutionContext =
-                       CachedExecutionContext.instance): Unit =
+                       EventBusExecutionContext.instance): Unit =
       eventHandlerRegistry.lookUpEventHandler(event).foreach { f =>
         if (async) {
           Future(f(event))
