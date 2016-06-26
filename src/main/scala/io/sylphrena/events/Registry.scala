@@ -18,6 +18,9 @@ private[this] final class Registry {
     eventHandlers.put(key, x)
   }
 
+  def hasEventHandlerFor[T](clazz: Class[T]): Boolean =
+    doLookup(clazz).nonEmpty
+
   def lookUpEventHandler[T](e: T): List[EventHandler[T]] =
     doLookup[T, EventHandler](e.getClass).reverse
 

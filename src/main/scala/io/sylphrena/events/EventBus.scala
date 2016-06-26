@@ -2,17 +2,18 @@ package io.sylphrena.events
 
 import java.util.{Timer, TimerTask}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
 sealed trait EventBus {
   def withAsyncExecution: EventBus
-  def post[T](event: => T): Unit
+  def post[T](event: => T)(implicit ec: ExecutionContext): Unit
   def postAtInterval[T](interval: FiniteDuration,
-                        initialDelay: FiniteDuration = 0.seconds)(
-      event: => T): Unit
+                        initialDelay: FiniteDuration = 0.seconds)(event: => T)(
+      implicit ec: ExecutionContext): Unit
   def subscribe[T](e: EventHandler[T])(implicit c: ClassTag[T]): EventBus
+  def canHandleEventType[T](implicit c: ClassTag[T]): Boolean
 }
 
 object EventBus {
@@ -22,7 +23,7 @@ object EventBus {
     private[this] val eventHandlerRegistry = new Registry()
     private[this] val timer = new Timer()
 
-    override def post[T](event: => T): Unit =
+    override def post[T](event: => T)(implicit ec: ExecutionContext): Unit =
       eventHandlerRegistry.lookUpEventHandler(event).foreach { f =>
         if (async) {
           Future(f(event))
@@ -33,7 +34,7 @@ object EventBus {
 
     override def postAtInterval[T](interval: FiniteDuration,
                                    initialDelay: FiniteDuration = 0.seconds)(
-        event: => T): Unit = {
+        event: => T)(implicit ec: ExecutionContext): Unit = {
       timer.scheduleAtFixedRate(new TimerTask {
         override def run(): Unit = post(event)
       }, 0, interval.toMillis)
@@ -46,5 +47,8 @@ object EventBus {
     }
 
     override def withAsyncExecution = this.copy(async = true)
+
+    override def canHandleEventType[T](implicit c: ClassTag[T]): Boolean =
+      eventHandlerRegistry.hasEventHandlerFor(c.runtimeClass)
   }
 }
