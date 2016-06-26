@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext
 object EventBusExecutionContext {
   val instance = ExecutionContext.fromExecutor(executor)
 
-  private[this] val numProc = Runtime.getRuntime().availableProcessors()
+  private[this] val numProc = Runtime.getRuntime.availableProcessors()
 
   private[this] val executor = new ThreadPoolExecutor(
       numProc,

@@ -49,6 +49,6 @@ object EventBus {
     override def withAsyncExecution = this.copy(async = true)
 
     override def canHandleEventType[T](implicit c: ClassTag[T]): Boolean =
-      eventHandlerRegistry.hasEventHandlerFor(c.runtimeClass)
+      eventHandlerRegistry.hasEventHandlerFor(c)
   }
 }
