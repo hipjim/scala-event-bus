@@ -11,7 +11,7 @@ object Runner extends App with EventBusExecutionContext {
   val eb = EventBus().withAsyncExecution
 
   eb.subscribe[Msg] { t =>
-    println(Thread.currentThread().getName + " -> " + t)
+    println(t)
   }
 
   if (eb.canHandleEventType[Msg])
