@@ -1,6 +1,7 @@
 package io.sylphrena.execution
 
 import java.util.concurrent._
+import java.util.concurrent.atomic.AtomicInteger
 
 import scala.concurrent.ExecutionContext
 
@@ -16,19 +17,21 @@ import scala.concurrent.ExecutionContext
   * Created by dev on 22/06/16.
   */
 object EventBusExecutionContext {
-  val instance = ExecutionContext.fromExecutor(executor)
-
   private[this] val numProc = Runtime.getRuntime.availableProcessors()
 
-  private[this] val executor = new ThreadPoolExecutor(
-      numProc,
-      200,
-      10 * 60,
-      TimeUnit.SECONDS,
-      new LinkedBlockingQueue[Runnable]())
-  executor.allowCoreThreadTimeOut(true)
-}
+  private case class DaemonThreadsFactory(name: String) extends ThreadFactory {
+    private[this] val threadNumber = new AtomicInteger(1)
 
-trait EventBusExecutionContext {
+    def newThread(r: Runnable): Thread = {
+      val thread = Executors.defaultThreadFactory().newThread(r)
+      val threadName = name + "-thread-" + threadNumber.getAndIncrement
+      thread.setName(threadName)
+      thread
+    }
+  }
+
+  val executor = new ScheduledThreadPoolExecutor(numProc, DaemonThreadsFactory("event-bus"))
+  val instance = ExecutionContext.fromExecutor(executor)
+
   implicit val defaultExecutionContext = EventBusExecutionContext.instance
 }
