@@ -2,6 +2,7 @@ package io.sylphrena.execution
 
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy
 import java.util.concurrent._
+import java.util.concurrent.atomic.AtomicInteger
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.concurrent.duration.FiniteDuration
@@ -24,6 +25,8 @@ trait Scheduler extends ExecutionContext {
 }
 
 object Scheduler {
+  def apply(corePoolSize: Int): Scheduler = new SchedulerImpl(corePoolSize)
+
   private class SchedulerImpl(
       corePoolSize: Int,
       threadFactory: ThreadFactory = Executors.defaultThreadFactory,
@@ -31,7 +34,8 @@ object Scheduler {
       extends Scheduler {
 
     private[this] val underlying: ScheduledExecutorService =
-      EventBusExecutionContext.executor
+      new ScheduledThreadPoolExecutor(corePoolSize,
+                                      DaemonThreadsFactory("event-bus"))
 
     override def scheduleOnce[T](p: => T)(
         delay: FiniteDuration): CancellableFuture[T] = {
@@ -47,16 +51,40 @@ object Scheduler {
 
     override def scheduleAtFixedRate(delay: FiniteDuration,
                                      period: FiniteDuration,
-                                     runnable: Runnable): Unit = ???
+                                     runnable: Runnable): Unit =
+      underlying.scheduleAtFixedRate(runnable,
+                                     period.toMillis,
+                                     delay.toMillis,
+                                     TimeUnit.MILLISECONDS)
 
-    override def reportFailure(cause: Throwable): Unit = ???
+    override def reportFailure(cause: Throwable): Unit =
+      cause.printStackTrace()
 
-    override def execute(runnable: Runnable): Unit = underlying.execute(runnable)
+    override def execute(runnable: Runnable): Unit =
+      underlying.execute(runnable)
   }
 
-  private class DelegatingCancellableFuture[T](val future: Future[T], cancelMethod: (Boolean) ⇒ Boolean) extends CancellableFuture[T] {
+  private class DelegatingCancellableFuture[T](
+      val future: Future[T],
+      cancelMethod: (Boolean) ⇒ Boolean)
+      extends CancellableFuture[T] {
     def cancel(interruptIfRunning: Boolean): Boolean =
       cancelMethod(interruptIfRunning)
   }
 
+  private case class DaemonThreadsFactory(name: String) extends ThreadFactory {
+    private[this] val threadNumber = new AtomicInteger(1)
+
+    def newThread(r: Runnable): Thread = {
+      val thread = Executors.defaultThreadFactory().newThread(r)
+      val threadName = name + "-thread-" + threadNumber.getAndIncrement
+      thread.setName(threadName)
+      thread
+    }
+  }
+}
+
+object EventBusExecutionContext {
+  private[this] val numProc = Runtime.getRuntime.availableProcessors()
+  implicit val defaultExecutionContext = Scheduler(numProc + 1)
 }

@@ -10,10 +10,6 @@ object Runner extends App {
 
   val eb = EventBus()
 
-//  eb.subscribeAsync[Msg] { t =>
-//    println(Thread.currentThread().getName + " --> 1 : " + t)
-//  }
-
   eb.subscribeAsync[Msg] { t =>
     println(Thread.currentThread().getName + " --> 2 : " + t.i)
   }
