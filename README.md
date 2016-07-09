@@ -2,6 +2,9 @@
 Simple scala event bus
 
 ```scala
+  import io.sylphrena.execution.EventBusExecutionContext._
+  import scala.concurrent.duration._
+
   val eb = EventBus()
 
   eb.subscribe[Msg] { t =>
