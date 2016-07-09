@@ -1,5 +1,9 @@
-# scala-event-bus
-Simple scala event bus
+Scala Event Bus
+===========
+
+[![Build Status](https://travis-ci.org/hipjim/scala-event-bus.svg?branch=master)](https://travis-ci.org/hipjim/scala-event-bus)
+
+###### *Simple event bus implementation in Scala.*
 
 ```scala
   import io.sylphrena.execution.EventBusExecutionContext._
