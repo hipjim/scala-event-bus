@@ -85,6 +85,8 @@ object Scheduler {
 }
 
 object EventBusExecutionContext {
+  import scala.concurrent.duration._
+
   private[this] val numProc = Runtime.getRuntime.availableProcessors()
   implicit val defaultExecutionContext = Scheduler(numProc + 1)
 }

@@ -1,16 +1,15 @@
 package io.sylphrena.events
 
-import java.util.{Timer, TimerTask}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
+import io.sylphrena.execution.Scheduler
+
 sealed trait EventBus {
   def post[T](event: => T)(implicit ec: ExecutionContext): Unit
   def postAtInterval[T](interval: FiniteDuration,
-                        initialDelay: FiniteDuration = 0.seconds)(event: => T)(
-      implicit ec: ExecutionContext): Unit
+                        initialDelay: FiniteDuration = 0.seconds)(event: => T)(implicit ec: Scheduler): Unit
   def subscribe[T](e: EventHandler[T])(implicit c: ClassTag[T]): EventBus
   def subscribeAsync[T](e: EventHandler[T])(implicit c: ClassTag[T]): EventBus
   def canHandleEventType[T](implicit c: ClassTag[T]): Boolean
@@ -24,8 +23,6 @@ object EventBus {
     private[this] val eventHandlerRegistry = new Registry()
     private[this] val asyncEventHandlersRegistry = new Registry()
 
-    private[this] val timer = new Timer()
-
     override def post[T](event: => T)(implicit ec: ExecutionContext): Unit = {
       eventHandlerRegistry.lookUpEventHandler(event).foreach { f =>
         f(event)
@@ -37,10 +34,10 @@ object EventBus {
 
     override def postAtInterval[T](interval: FiniteDuration,
                                    initialDelay: FiniteDuration = 0.seconds)(
-        event: => T)(implicit ec: ExecutionContext): Unit = {
-      timer.scheduleAtFixedRate(new TimerTask {
+        event: => T)(implicit ec: Scheduler): Unit = {
+      ec.scheduleAtFixedRate(initialDelay, interval, new Runnable {
         override def run(): Unit = post(event)
-      }, 0, interval.toMillis)
+      })
     }
 
     override def subscribe[T](e: EventHandler[T])(
