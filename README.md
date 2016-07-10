@@ -12,7 +12,6 @@ Scala Event Bus
   final case class Msg(content: String)
 
   val eb = EventBus()
-
   eb.subscribe[Msg] { t =>
     println(t.content)
   }
@@ -28,7 +27,7 @@ Scala Event Bus
 
   // scheduled event publishing
   eb.postAtInterval[Msg](interval = 10.seconds, initialDelay = 5.seconds) {
-      Msg(Source.fromURL("http://api.fixer.io/latest?base=USD").mkString)
-   }
+    Msg(Source.fromURL("http://api.fixer.io/latest?base=USD").mkString)
+  }
 ```
 
