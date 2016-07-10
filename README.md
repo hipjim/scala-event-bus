@@ -9,6 +9,8 @@ Scala Event Bus
   import io.sylphrena.execution.EventBusExecutionContext._
   import scala.concurrent.duration._
 
+  final case class Msg(content: String)
+
   val eb = EventBus()
 
   eb.subscribe[Msg] { t =>
@@ -24,6 +26,7 @@ Scala Event Bus
   for (i <- 1 to 100)
     eb.post(Msg(i.toString))
 
+  // scheduled event publishing
   eb.postAtInterval[Msg](interval = 10.seconds, initialDelay = 5.seconds) {
       Msg(Source.fromURL("http://api.fixer.io/latest?base=USD").mkString)
    }
