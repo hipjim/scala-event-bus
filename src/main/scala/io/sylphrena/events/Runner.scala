@@ -20,10 +20,8 @@ object Runner extends App {
   // subscribing an async message handler.
   // it will be executed as a Future on the event bus execution context
   eb.subscribeAsync[Msg] { t =>
-    println(Thread.currentThread().getName + " --> " + t.content)
+    println(s"${Thread.currentThread().getName} --> ${t.content}")
   }
-
-
 
 //  for (i <- 1 to 10000000)
 //    eb.post(Msg(i))
